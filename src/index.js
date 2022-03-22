@@ -1,17 +1,97 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import  ReactDOM  from 'react-dom';
+import { useState, useEffect } from 'react';
+import ClayTable from '@clayui/table';
+
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+const {Liferay} = window;
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+const UPDATE_DRIVING_LICENSE_TEST_SCORE = 'updateDrivingLicenseTestScore';
+
+const defaultPlayers = [{
+	name: 'Alberto Ruiz',
+	score: 25
+},
+{
+	name: 'Irene Díaz',
+	score: 20
+}];
+
+function App() {
+	const [players, setPlayers] = useState(defaultPlayers);
+
+	useEffect(() =>{
+		Liferay.on(UPDATE_DRIVING_LICENSE_TEST_SCORE, (event) => {
+			const newPlayers = [...players];
+			const playerName = event.playerName;
+			const score = event.score;
+
+			const player = newPlayers.find(player => player.name === playerName);
+
+			if (player) {
+				player.score = score;
+			}
+			else {
+				newPlayers.push({name: playerName, score});
+			}
+
+			setPlayers(newPlayers);
+		})
+	},[]);
+
+	return (
+		<div className="App">
+			<ClayTable
+				hover
+				responsiveSize="md"
+				striped
+			>
+				<ClayTable.Head>
+					<ClayTable.Row>
+						<ClayTable.Cell
+							align="left"
+							headingTitle
+						>
+							User Name
+						</ClayTable.Cell>
+						<ClayTable.Cell
+							align="left"
+							headingTitle
+						>
+							Score
+						</ClayTable.Cell>
+					</ClayTable.Row>
+				</ClayTable.Head>
+
+				<ClayTable.Body>
+					{ 
+						players.map((player, key) => (
+							<ClayTable.Row key={key}>
+								<ClayTable.Cell headingTitle align="left">{player.name}</ClayTable.Cell>
+								<ClayTable.Cell align="left">{player.score}</ClayTable.Cell>
+							</ClayTable.Row>
+						))
+					}
+				</ClayTable.Body>
+			</ClayTable>			
+		</div>
+	);
+}
+class RecordLicense extends HTMLElement {
+	connectedCallback() {
+		this.innerHTML = '<div id="recordLicense"></div>';
+
+		ReactDOM.render(
+			<App />,
+			document.querySelector('#recordLicense')
+		);
+	}
+}
+
+if (customElements.get('record-license')) {
+	console.log(
+		'Skipping registration for <record-license> (already registered)'
+	);
+} else {
+	customElements.define('record-license', RecordLicense);
+}
