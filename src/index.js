@@ -35,6 +35,8 @@ function App() {
 				newPlayers.push({name: playerName, score});
 			}
 
+			newPlayers.sort((a, b) => b.score - a.score );
+
 			setPlayers(newPlayers);
 		})
 	},[]);
