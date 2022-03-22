@@ -8,8 +8,6 @@ const {Liferay, themeDisplay} = window;
 
 const CUSTOM_EVENT_RECORD_APP = 'customEventRecordApp';
 
-const KEY = "RecordLicenseApp";
-
 const defaultPlayers = [{
   name: 'Alberto Ruiz',
   score: 25
@@ -24,36 +22,43 @@ function App() {
 
   const [players, setPlayers] = useState(defaultPlayers);
 
-  Liferay.on(CUSTOM_EVENT_RECORD_APP, (event) => {
+  function existPlayer (playerName) {
     const listPlayers = [...players];
-    listPlayers.push({name:event.namePlayer, score: event.score});
-    setPlayers(listPlayers);
-  })
+    for(const player of listPlayers){
+      if (player.name === playerName){
+        return true;
+      }
+    }
+    return false;
+  }
 
-  console.log(players)
-
-  /*useEffect(()=>{
-    const storedPlayers = JSON.stringify(localStorage.getItem(KEY));
-    if (storedPlayers)
-    setPlayers(storedPlayers);
-  }, [])*/
-  
-
-  /*useEffect(() =>{
+  useEffect(() =>{
     
     Liferay.on(CUSTOM_EVENT_RECORD_APP, (event) => {
       const listPlayers = [...players];
-      listPlayers.push({name:event.namePlayer, score: event.score});
-      setPlayers(listPlayers);
+	    const playerName = event.namePlayer;
+      const score = event.score;
+      
+      if (existPlayer(playerName)){
+        for(var i = 0; i < listPlayers.length; i++){
+          if (listPlayers[i].name === playerName){
+            listPlayers[i].score+=score;
+          }
+        }
+        setPlayers(listPlayers);
+      }else {
+        listPlayers.push({name:playerName, score: score});
+        setPlayers(listPlayers);
+      }
+      
     })
 
-    localStorage.setItem(KEY, JSON.stringify(players))
-  },[players])*/
+  },[])
 
 
   return (
     <div className="App">
-      <ClayTable responsiveSize='md'>
+      <ClayTable hover striped responsiveSize='md'>
 			<ClayTable.Head>
 				<ClayTable.Row>
 					<ClayTable.Cell headingTitle align='left'>
